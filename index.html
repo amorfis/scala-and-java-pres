@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=1024, user-scalable=no">
+
+  <title>Scala and Java, in one project</title>
+
+  <!-- Required stylesheet -->
+  <link rel="stylesheet" media="screen" href="deck.js/core/deck.core.css">
+
+  <!-- Extension CSS files go here. Remove or add as needed. -->
+  <link rel="stylesheet" media="screen" href="deck.js/extensions/goto/deck.goto.css">
+  <link rel="stylesheet" media="screen" href="deck.js/extensions/menu/deck.menu.css">
+  <link rel="stylesheet" media="screen" href="deck.js/extensions/navigation/deck.navigation.css">
+  <link rel="stylesheet" media="screen" href="deck.js/extensions/status/deck.status.css">
+  <link rel="stylesheet" media="screen" href="deck.js/extensions/scale/deck.scale.css">
+
+  <!-- Style theme. More available in /themes/style/ or create your own. -->
+  <link rel="stylesheet" media="screen" href="deck.js/themes/style/web-2.0.css">
+
+  <!-- Transition theme. More available in /themes/transition/ or create your own. -->
+  <link rel="stylesheet" media="screen" href="deck.js/themes/transition/horizontal-slide.css">
+
+  <!-- Basic black and white print styles -->
+  <link rel="stylesheet" media="print" href="core/print.css">
+
+  <!-- Required Modernizr file -->
+  <script src="deck.js/modernizr.custom.js"></script>
+
+  <!-- Syntax Highlighter -->
+  <script src="syntaxhighlighter/scripts/shCore.js"></script>
+  <script src="syntaxhighlighter/scripts/shBrushXml.js"></script>
+  <script src="syntaxhighlighter/scripts/shBrushJava.js"></script>
+  <script src="syntaxhighlighter/scripts/shBrushScala.js"></script>
+  <link rel="stylesheet" href="syntaxhighlighter/styles/shCore.css">
+  <link rel="stylesheet" href="syntaxhighlighter/styles/shThemeDefault.css">
+</head>
+<body>
+  <div class="deck-container">
+
+    <!-- Begin slides. Just make elements with a class of slide. -->
+
+    <section class="slide">
+      <h1>Scala and Java, in one project</h1>
+    </section>
+
+    <section class="slide">
+      <img src="img/dawg.png">
+    </section>
+
+    <section class="slide">
+      <img src="img/scala-java.svg" />
+    </section>
+
+    <section class="slide">
+      <h3>Interdependencies</h3>
+      <section class="slide">
+        <p>Java first?</p>
+      </section>
+      <section class="slide">
+        <p>What if it depends on Scala?</p>
+      </section>
+      <section class="slide">
+        <p>Scala first?</p>
+      </section>
+      <section class="slide">
+        <p>What if it depends on Java?</p>
+      </section>
+      <section class="slide">
+        <p>Scala, but with Java understanding.</p>
+      </section>
+    </section>
+
+    <section class="slide">
+      <h3>maven-scala-plugin</h3>
+      <p>Scala compiler understands Java code. It can compile Scala even if it depends
+      on Java which is not yet compiled.</p>
+      <pre>mvn clean scala:compile</pre>
+      <p>Java compiler is not so smart. If Java depends on Scala code, it throws error.</p>
+      <pre>mvn clean compiler:compile</pre>
+    </section>
+
+    <section class="slide">
+      <h3>Example configuration</h3>
+      <pre class="brush: xml">
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <version>2.15.2</version>
+        <executions>
+          <execution>
+            <id>scala-compile-first</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>add-source</goal>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <scalaVersion>${scala.version}</scalaVersion>
+              <displayCmd>true</displayCmd>
+              <args>
+                <arg>-target:jvm-1.7</arg>
+              </args>
+            </configuration>
+          </execution>
+          <execution>
+            <id>scala-test-compile</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <scalaVersion>${scala.version}</scalaVersion>
+              <displayCmd>true</displayCmd>
+              <args>
+                <arg>-target:jvm-1.7</arg>
+              </args>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      </pre>
+    </section>
+
+    <section class="slide">
+      <h1>Are we done?</h1>
+    </section>
+
+    <section class="slide">
+      <h3>Types...</h3>
+      <img src="img/footer-separator.png">
+      <section class="slide">
+        <img src="img/error-kod.png" />
+        <section class="slide">
+          <img src="img/error-messages.png"/>
+        </section>
+      </section>
+    </section>
+
+    <section class="slide">
+      <img src="img/convert-all-the-things.png">
+    </section>
+
+    <section class="slide">
+      <h3>Converter</h3>
+      <pre class="brush: scala">
+        object ScalaConverters {
+
+          def toScala[A](jList: java.util.List[A]): List[A] = {
+            JavaConverters.asScalaBufferConverter(jList).asScala.toList
+          }
+
+          def toScala[A](jCollection: java.util.Collection[A]): Iterable[A] = {
+            JavaConverters.collectionAsScalaIterableConverter(jCollection).asScala
+          }
+
+          def toScala[A](jSet: java.util.Set[A]): Set[A] = {
+            JavaConverters.asScalaSetConverter(jSet).asScala.toSet
+          }
+
+          def toScala[A, B](jMap: java.util.Map[A, B]): Map[A, B] = {
+            JavaConverters.mapAsScalaMapConverter(jMap).asScala.toMap
+          }
+
+          def toJava[A](sList: Seq[A]): java.util.List[A] = {
+            new util.ArrayList(JavaConverters.seqAsJavaListConverter(sList).asJava)
+          }
+
+          def toJava[A](sCollection: Iterable[A]): java.util.Collection[A] = {
+            JavaConverters.asJavaCollectionConverter(sCollection).asJavaCollection
+          }
+
+          def toJava[A](sSet: Set[A]): java.util.Set[A] = {
+            JavaConverters.setAsJavaSetConverter(sSet).asJava
+          }
+
+          def toJava[A, B](sMap: Map[A, B]): java.util.Map[A, B] = {
+            JavaConverters.mapAsJavaMapConverter(sMap).asJava
+          }
+        }
+      </pre>
+    </section>
+
+    <section class="slide">
+      <h3>Use conversion Luke</h3>
+      <img src="img/conv-import.png">
+      <img src="img/conv-no-error.png">
+    </section>
+
+    <section class="slide">
+      <h1 style="top: 30%;">Thank you!</h1>
+
+      <div style="top: 50%; position: absolute; text-align: center; left: 0; right: 0;">
+        <p><a href="https://github.com/amorfis/spock-pres">https://github.com/amorfis/spock-pres</a></p>
+
+        <p><a href="http://pawelstawicki.blogspot.com">http://pawelstawicki.blogspot.com</a></p>
+
+        <p>@pawelstawicki</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h1 style="top: 30%;">Szczecin Java Users Group</h1>
+
+      <div style="top: 50%; position: absolute; text-align: center; left: 0; right: 0;">
+        <p><a href="http://szczecin.jug.pl">http://szczecin.jug.pl</a></p>
+
+        <p><a href="http://devcrowd.pl/">http://devcrowd.pl/</a></p>
+      </div>
+    </section>
+    <!-- End slides. -->
+
+    <!-- Begin extension snippets. Add or remove as needed. -->
+
+    <!-- deck.navigation snippet -->
+    <div aria-role="navigation">
+      <a href="#" class="deck-prev-link" title="Previous">&#8592;</a>
+      <a href="#" class="deck-next-link" title="Next">&#8594;</a>
+    </div>
+
+    <!-- deck.status snippet -->
+    <p class="deck-status" aria-role="status">
+      <span class="deck-status-current"></span>
+      /
+      <span class="deck-status-total"></span>
+    </p>
+
+    <!-- deck.goto snippet -->
+    <form action="deck.js" method="get" class="goto-form">
+      <label for="goto-slide">Go to slide:</label>
+      <input type="text" name="slidenum" id="goto-slide" list="goto-datalist">
+      <datalist id="goto-datalist"></datalist>
+      <input type="submit" value="Go">
+    </form>
+
+    <!-- End extension snippets. -->
+  </div>
+
+<!-- Required JS files. -->
+<script src="deck.js/jquery.min.js"></script>
+<script src="deck.js/core/deck.core.js"></script>
+
+<!-- Extension JS files. Add or remove as needed. -->
+<script src="deck.js/extensions/menu/deck.menu.js"></script>
+<script src="deck.js/extensions/goto/deck.goto.js"></script>
+<script src="deck.js/extensions/status/deck.status.js"></script>
+<script src="deck.js/extensions/navigation/deck.navigation.js"></script>
+<script src="deck.js/extensions/scale/deck.scale.js"></script>
+
+<!-- Initialize the deck. You can put this in an external file if desired. -->
+<script>
+  $(function() {
+    $.deck('.slide');
+  });
+</script>
+
+<script type="text/javascript">
+  SyntaxHighlighter.all()
+</script>
+</body>
+</html>
