@@ -129,7 +129,8 @@
     </section>
 
     <section class="slide">
-      <h3>Types...</h3>
+      <h2>Types...</h2>
+      <h3>Collections</h3>
       <img src="img/footer-separator.png">
       <section class="slide">
         <img src="img/error-kod.png" />
@@ -187,6 +188,26 @@
       <h3>Use conversion Luke</h3>
       <img src="img/conv-import.png">
       <img src="img/conv-no-error.png">
+    </section>
+
+    <section class="slide">
+      <h2>Converter</h2>
+      <h3>Option / Optional</h3>
+      <pre class="brush: scala">
+        def toJava[A](sOpt: Option[A]): Optional[A] = {
+          sOpt match {
+            case Some(a) => Optional.of(a)
+            case None => Optional.absent()
+          }
+        }
+
+        def toScala[A](gOpt: Optional[A]): Option[A] = {
+          gOpt.isPresent match {
+            case true => Option(gOpt.get())
+            case false => Option.empty
+          }
+        }
+      </pre>
     </section>
 
     <section class="slide">
